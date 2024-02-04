@@ -69,7 +69,7 @@ drmModeConnectorPtr DrmApi::get_connector(int fd, int dpy) {
             continue;
         }
 
-        if (c->connection == DRM_MODE_CONNECTED && index == dpy) {
+        if (index == dpy) {
             drmModeFreeResources(res);
             return c;
         }
