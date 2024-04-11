@@ -156,6 +156,25 @@ int DrmApi::drm_proc(int fd, const RkHwcProxyAidlRequest& request, RkHwcProxyAid
             response->value = responseValue;
             break;
         }
+        case CMD_SET_DVI_STATUS: {
+            int dpy = request.data[0];
+            int value = request.data[1];
+            ALOGD("drm_proc set dvi status dpy:%d value:%d", dpy, value);
+            int ret = set_dvi_status(fd, dpy, value);
+            std::vector<uint8_t> responseValue(1);
+            responseValue[0] = -ret;
+            response->value = responseValue;
+            break;
+        }
+        case CMD_GET_DVI_STATUS: {
+            int dpy = request.data[0];
+            ALOGD("drm_proc get dvi status dpy:%d", dpy);
+            int ret = get_dvi_status(fd, dpy);
+            std::vector<uint8_t> responseValue(1);
+            responseValue[0] = -ret;
+            response->value = responseValue;
+            break;
+        }
     }
     return 0;
 }
@@ -362,3 +381,32 @@ int DrmApi::get_hdcp_encrypted_status(int fd, int dpy) {
     return prop_value;
 }
 
+int DrmApi::set_dvi_status(int fd, int dpy, int value) {
+    int ret = 0;
+    drmModeConnectorPtr connector = NULL;
+    drmModeObjectPropertiesPtr props = NULL;
+    connector = get_connector(fd, dpy);
+    props = drmModeObjectGetProperties(fd, connector->connector_id, DRM_MODE_OBJECT_CONNECTOR);
+    int prop_id = get_property_id(fd, props, "output_hdmi_dvi");
+    ret = drmModeObjectSetProperty(fd, connector->connector_id, DRM_MODE_OBJECT_CONNECTOR,
+        prop_id, value);
+    if(connector)
+        drmModeFreeConnector(connector);
+    if(props)
+        drmModeFreeObjectProperties(props);
+    return ret;
+}
+
+int DrmApi::get_dvi_status(int fd, int dpy) {
+    drmModeConnectorPtr connector = NULL;
+    drmModeObjectPropertiesPtr props = NULL;
+    connector = get_connector(fd, dpy);
+    props = drmModeObjectGetProperties(fd, connector->connector_id, DRM_MODE_OBJECT_CONNECTOR);
+    int index = get_property_index(fd, props, "output_hdmi_dvi");
+    uint64_t prop_value = props->prop_values[index];
+    if(connector)
+        drmModeFreeConnector(connector);
+    if(props)
+        drmModeFreeObjectProperties(props);
+    return prop_value;
+}

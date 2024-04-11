@@ -35,6 +35,8 @@ typedef enum _drm_cmd {
     CMD_GET_HDCP_ENCRYPTED_STATUS,
     CMD_SET_GAMMA,
     CMD_SET_3DLUT,
+    CMD_SET_DVI_STATUS,
+    CMD_GET_DVI_STATUS,
 } drm_cmd;
 
 struct drm_gamma {
@@ -65,6 +67,8 @@ class DrmApi {
     int get_hdcp_enable_status(int fd, int dpy);
     int set_hdcp_type(int fd, int dpy, int type);
     int get_hdcp_encrypted_status(int fd, int dpy);
+    int set_dvi_status(int fd, int dpy, int value);
+    int get_dvi_status(int fd, int dpy);
 private:
     drmModeConnectorPtr get_connector(int fd, int dpy);
     int get_property_id(int fd, drmModeObjectProperties *props, const char *name);
